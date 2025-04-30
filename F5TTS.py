@@ -46,7 +46,7 @@ class F5TTSCreate:
     ]
     vocoder_types = ["auto", "vocos", "bigvgan"]
     tooltip_seed = "Seed. -1 = random"
-    tooltip_speed = "Speed. >1.0 slower. <1.0 faster"
+    tooltip_speed = "Speed. >1.0 slower. <1.0 faster. Using torchaudio.transforms.TimeStretch" # noqa E501
 
     def get_model_names():
         model_names = F5TTSCreate.model_names[:]
@@ -295,8 +295,9 @@ class F5TTSCreate:
 
     def generate_audio(
         self, voices, model_obj, chunks, seed, vocoder, mel_spec_type,
-        speed
+        speed, infer_args={}
     ):
+        print(voices, model_obj, chunks, seed, vocoder, mel_spec_type, speed, infer_args)
         if seed >= 0:
             torch.manual_seed(seed)
         else:
@@ -328,6 +329,7 @@ class F5TTSCreate:
                 ref_audio, ref_text, gen_text, model_obj,
                 vocoder=vocoder, mel_spec_type=mel_spec_type,
                 device=comfy.model_management.get_torch_device(),
+                **infer_args
                 )
             generated_audio_segments.append(audio)
             frame_rate = final_sample_rate
@@ -353,7 +355,7 @@ class F5TTSCreate:
     def create(
         self, voices, chunks, seed=-1, model="F5",
         vocoder_name="vocos", speed=1,
-        model_type='F5TTS_Base'
+        model_type='F5TTS_Base', infer_args={}
     ):
         (
             model_obj,
@@ -365,7 +367,7 @@ class F5TTSCreate:
             model_obj,
             chunks, seed,
             vocoder, mel_spec_type=mel_spec_type,
-            speed=speed,
+            speed=speed, infer_args=infer_args,
         )
 
     def time_shift(self, audio, speed):
@@ -380,6 +382,74 @@ class F5TTSCreate:
         )
 
         return {"waveform": new_waveform, "sample_rate": rate}
+
+    @staticmethod
+    def load_voice_from_file(sample):
+        input_dir = folder_paths.get_input_directory()
+        txt_file = os.path.join(
+            input_dir,
+            F5TTSCreate.get_txt_file_path(sample)
+            )
+        audio_text = ''
+        with open(txt_file, 'r', encoding='utf-8') as file:
+            audio_text = file.read()
+        audio_path = folder_paths.get_annotated_filepath(sample)
+        print("audio_text")
+        print(audio_text)
+        return F5TTSCreate.load_voice(audio_path, audio_text)
+
+    @staticmethod
+    def load_voices_from_files(sample, voice_names):
+        voices = {}
+        p = Path(sample)
+        for voice_name in voice_names:
+            if voice_name == "main":
+                continue
+            sample_file = os.path.join(
+                os.path.dirname(sample),
+                "{stem}.{voice_name}{suffix}".format(
+                    stem=p.stem,
+                    voice_name=voice_name,
+                    suffix=p.suffix
+                    )
+                )
+            print("voice:"+voice_name+","+sample_file+','+sample)
+            voices[voice_name] = F5TTSCreate.load_voice_from_file(sample_file)
+        return voices
+
+    @staticmethod
+    def remove_wave_file(wave_file_name):
+        if wave_file_name is not None:
+            try:
+                os.unlink(wave_file_name)
+            except Exception as e:
+                print("F5TTS: Cannot remove? "+wave_file_name)
+                print(e)
+
+    @staticmethod
+    def load_voice_from_input(sample_audio, sample_text):
+        wave_file = tempfile.NamedTemporaryFile(
+            suffix=".wav", delete=False
+            )
+        wave_file_name = wave_file.name
+        wave_file.close()
+
+        hasAudio = False
+        for (batch_number, waveform) in enumerate(
+            sample_audio["waveform"].cpu()
+        ):
+            buff = io.BytesIO()
+            torchaudio.save(
+                buff, waveform, sample_audio["sample_rate"], format="WAV"
+                )
+            with open(wave_file_name, 'wb') as f:
+                f.write(buff.getbuffer())
+            hasAudio = True
+            break
+        if not hasAudio:
+            raise FileNotFoundError("No audio input")
+        r = F5TTSCreate.load_voice(wave_file_name, sample_text)
+        return (r, wave_file_name)
 
     @staticmethod
     def get_config_path():
@@ -401,7 +471,7 @@ class F5TTSCreate:
 
 class F5TTSAudioInputs:
     def __init__(self):
-        self.wave_file_name = None
+        pass
 
     @classmethod
     def INPUT_TYPES(s):
@@ -443,39 +513,6 @@ class F5TTSAudioInputs:
     FUNCTION = "create"
     DESCRIPTION = "From one audio input.  (Does not support multi voice)"
 
-    def load_voice_from_input(self, sample_audio, sample_text):
-        wave_file = tempfile.NamedTemporaryFile(
-            suffix=".wav", delete=False
-            )
-        self.wave_file_name = wave_file.name
-        wave_file.close()
-
-        hasAudio = False
-        for (batch_number, waveform) in enumerate(
-            sample_audio["waveform"].cpu()
-        ):
-            buff = io.BytesIO()
-            torchaudio.save(
-                buff, waveform, sample_audio["sample_rate"], format="WAV"
-                )
-            with open(self.wave_file_name, 'wb') as f:
-                f.write(buff.getbuffer())
-            hasAudio = True
-            break
-        if not hasAudio:
-            raise FileNotFoundError("No audio input")
-        r = F5TTSCreate.load_voice(self.wave_file_name, sample_text)
-        return r
-
-    def remove_wave_file(self):
-        if self.wave_file_name is not None:
-            try:
-                os.unlink(self.wave_file_name)
-                self.wave_file_name = None
-            except Exception as e:
-                print("F5TTS: Cannot remove? "+self.wave_file_name)
-                print(e)
-
     def create(
         self,
         sample_audio, sample_text,
@@ -483,8 +520,12 @@ class F5TTSAudioInputs:
         speed=1,
         model_type=None,
     ):
+
+        wave_file_name = None
         try:
-            main_voice = self.load_voice_from_input(sample_audio, sample_text)
+            (main_voice, wave_file_name) = F5TTSCreate.load_voice_from_input(
+                sample_audio, sample_text
+            )
 
             f5ttsCreate = F5TTSCreate()
 
@@ -499,7 +540,8 @@ class F5TTSAudioInputs:
             if speed != 1:
                 audio = f5ttsCreate.time_shift(audio, speed)
         finally:
-            self.remove_wave_file()
+            if wave_file_name is not None:
+                F5TTSCreate.remove_wave_file(wave_file_name)
         return (audio, )
 
     @classmethod
@@ -584,38 +626,6 @@ class F5TTSAudio:
     FUNCTION = "create"
     DESCRIPTION = "Put audio + txt into inputs/F5-TTS. (Supports Multi Voice)"
 
-    def load_voice_from_file(self, sample):
-        input_dir = folder_paths.get_input_directory()
-        txt_file = os.path.join(
-            input_dir,
-            F5TTSCreate.get_txt_file_path(sample)
-            )
-        audio_text = ''
-        with open(txt_file, 'r', encoding='utf-8') as file:
-            audio_text = file.read()
-        audio_path = folder_paths.get_annotated_filepath(sample)
-        print("audio_text")
-        print(audio_text)
-        return F5TTSCreate.load_voice(audio_path, audio_text)
-
-    def load_voices_from_files(self, sample, voice_names):
-        voices = {}
-        p = Path(sample)
-        for voice_name in voice_names:
-            if voice_name == "main":
-                continue
-            sample_file = os.path.join(
-                os.path.dirname(sample),
-                "{stem}.{voice_name}{suffix}".format(
-                    stem=p.stem,
-                    voice_name=voice_name,
-                    suffix=p.suffix
-                    )
-                )
-            print("voice:"+voice_name+","+sample_file+','+sample)
-            voices[voice_name] = self.load_voice_from_file(sample_file)
-        return voices
-
     def create(
         self,
         sample, speech, seed=-2, model="F5", vocoder="vocos",
@@ -624,13 +634,13 @@ class F5TTSAudio:
     ):
         # vocoder = "vocos"
         # Install.check_install()
-        main_voice = self.load_voice_from_file(sample)
+        main_voice = F5TTSCreate.load_voice_from_file(sample)
 
         f5ttsCreate = F5TTSCreate()
 
         chunks = f5ttsCreate.split_text(speech)
         voice_names = f5ttsCreate.get_voice_names(chunks)
-        voices = self.load_voices_from_files(sample, voice_names)
+        voices = F5TTSCreate.load_voices_from_files(sample, voice_names)
         voices['main'] = main_voice
 
         audio = f5ttsCreate.create(
@@ -661,4 +671,217 @@ class F5TTSAudio:
         m.update(vocoder)
         m.update(speed)
         m.update(model_type)
+        return m.digest().hex()
+
+
+class F5TTSAudioAdvanced:
+    default_sample_text = "Text of sample_audio"
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(s):
+        input_dir = folder_paths.get_input_directory()
+        input_dirs = [
+                "",
+                'audio',
+                'F5-TTS',
+        ]
+        files = []
+        for dir_short in input_dirs:
+            d = os.path.join(input_dir, dir_short)
+            if os.path.exists(d):
+                dir_files = folder_paths.filter_files_content_types(
+                    os.listdir(d), ["audio", "video"]
+                    )
+                dir_files = [os.path.join(dir_short, s) for s in dir_files]
+                files.extend(dir_files)
+        filesWithTxt = []
+        for file in files:
+            txtFile = F5TTSCreate.get_txt_file_path(file)
+            if os.path.isfile(os.path.join(input_dir, txtFile)):
+                filesWithTxt.append(file)
+        filesWithTxt = sorted(filesWithTxt)
+
+        model_names = F5TTSCreate.get_model_names()
+        model_types = F5TTSCreate.get_configs()
+
+        return {
+            "required": {
+                "sample": (filesWithTxt, {"audio_upload": True}),
+                "speech": ("STRING", {
+                    "multiline": True,
+                    "default": "This is what I want to say"
+                }),
+                "seed": ("INT", {
+                    "display": "number", "step": 1,
+                    "default": 1, "min": -1,
+                    "tooltip": F5TTSCreate.tooltip_seed,
+                }),
+                "model": (model_names,),
+                "vocoder": (F5TTSCreate.vocoder_types, {
+                    "tooltip": "Most models are usally vocos",
+                }),
+                "speed": ("FLOAT", {
+                    "default": 1.0,
+                    "tooltip": F5TTSCreate.tooltip_speed,
+                }),
+                "model_type": (model_types, {
+                    "tooltip": "Type of model",
+                    "default": 'F5TTS_Base',
+                }),
+            },
+            "optional": {
+                "sample_audio": ("AUDIO", {
+                    "tooltip": "When this is connected, sample is ignored.  Also put the words into sample_text", # noqa E501
+                }),
+                "sample_text": ("STRING", {
+                    "default": F5TTSAudioAdvanced.default_sample_text,
+                    "multiline": True,
+                }),
+                "target_rms": ("FLOAT", {
+                    "default": 0.1,
+                    "tooltip": "Target output speech loudness normalization value", # noqa E501
+                    "step": 0.01,
+                }),
+                "cross_fade_duration": ("FLOAT", {
+                    "default": 0.15,
+                    "tooltip": "Duration of cross-fade between audio segments in seconds", # noqa E501
+                    "step": 0.01,
+                }),
+                "nfe_step": ("INT", {
+                    "default": 32,
+                    "tooltip": "The number of function evaluation (denoising steps)", # noqa E501
+                }),
+                "cfg_strength": ("FLOAT", {
+                    "default": 2,
+                    "tooltip": "Classifier-free guidance strength",
+                }),
+                "sway_sampling_coef": ("FLOAT", {
+                    "default": -1,
+                    "tooltip": "Sway Sampling coefficient",
+                    "min": -10,
+                    "step": 0.001,
+                }),
+                "f5tts_speed": ("FLOAT", {
+                    "default": 1.0,
+                    "tooltip": "The speed of the generated audio. Using F5-TTS. Speed. >1.0 slower. <1.0 faster.", # noqa E501
+                    "step": 0.01,
+                }),
+                "fix_duration": ("FLOAT", {
+                    "default": -1,
+                    "tooltip": "Fix the total duration (ref and gen audios) in second. -1 = disable", # noqa E501
+                    "min": -1,
+                    "step": 0.01,
+                }),
+            }
+        }
+
+    CATEGORY = "audio"
+
+    RETURN_TYPES = ("AUDIO", )
+    FUNCTION = "create"
+    DESCRIPTION = "Advanced with extra options from F5-TTS."
+
+    def create(
+        self,
+        sample, speech, seed=-2, model="F5", vocoder="vocos",
+        speed=1,
+        model_type=None,
+        sample_audio=None,
+        sample_text="",
+        target_rms=0.1,
+        cross_fade_duration=0.15,
+        nfe_step=32,
+        cfg_strength=2,
+        sway_sampling_coef=-1,
+        f5tts_speed=1.0,
+        fix_duration=-1,
+    ):
+        wave_file_name = None
+        try:
+            f5ttsCreate = F5TTSCreate()
+            voices = {}
+
+            if sample_audio is not None:
+                if sample_text == F5TTSAudioAdvanced.default_sample_text:
+                    raise Exception(
+                        "Must change sample_text to what was said in the audio input."  # noqa: E501
+                    )
+                (
+                    main_voice, wave_file_name
+                ) = F5TTSCreate.load_voice_from_input(
+                        sample_audio, sample_text
+                    )
+                chunks = f5ttsCreate.split_text(speech)
+            else:
+                main_voice = F5TTSCreate.load_voice_from_file(sample)
+                chunks = f5ttsCreate.split_text(speech)
+                voice_names = f5ttsCreate.get_voice_names(chunks)
+                voices = F5TTSCreate.load_voices_from_files(
+                    sample, voice_names
+                )
+            voices['main'] = main_voice
+            infer_args = {}
+            infer_args['target_rms'] = target_rms
+            infer_args['cross_fade_duration'] = cross_fade_duration
+            infer_args['nfe_step'] = nfe_step
+            infer_args['cfg_strength'] = cfg_strength
+            infer_args['sway_sampling_coef'] = sway_sampling_coef
+            if (f5tts_speed != 1):
+                infer_args['speed'] = 1 / f5tts_speed
+            if (fix_duration >= 0):
+                infer_args['fix_duration'] = fix_duration
+
+            audio = f5ttsCreate.create(
+                voices, chunks, seed, model, vocoder, speed,
+                model_type, infer_args
+                )
+            if speed != 1:
+                audio = f5ttsCreate.time_shift(audio, speed)
+        finally:
+            if wave_file_name is not None:
+                F5TTSCreate.remove_wave_file(wave_file_name)
+
+        return (audio, )
+
+    @classmethod
+    def IS_CHANGED(
+        s,
+        sample, speech, seed, model, vocoder, speed,
+        model_type,
+        sample_audio,
+        sample_text,
+        target_rms,
+        cross_fade_duration,
+        nfe_step,
+        cfg_strength,
+        sway_sampling_coef,
+        f5tts_speed,
+        fix_duration,
+    ):
+        m = hashlib.sha256()
+        audio_path = folder_paths.get_annotated_filepath(sample)
+        audio_txt_path = F5TTSCreate.get_txt_file_path(audio_path)
+        last_modified_timestamp = os.path.getmtime(audio_path)
+        txt_last_modified_timestamp = os.path.getmtime(audio_txt_path)
+        m.update(audio_path)
+        m.update(str(last_modified_timestamp))
+        m.update(str(txt_last_modified_timestamp))
+        m.update(speech)
+        m.update(seed)
+        m.update(model)
+        m.update(vocoder)
+        m.update(speed)
+        m.update(model_type)
+        m.update(sample_audio)
+        m.update(sample_text)
+        m.update(target_rms)
+        m.update(cross_fade_duration)
+        m.update(nfe_step)
+        m.update(cfg_strength)
+        m.update(sway_sampling_coef)
+        m.update(f5tts_speed)
+        m.update(fix_duration)
         return m.digest().hex()

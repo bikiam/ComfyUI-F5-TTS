@@ -1,0 +1,281 @@
+{
+  "id": "8fefb582-a9e3-4434-927a-464a921380fe",
+  "revision": 0,
+  "last_node_id": 6,
+  "last_link_id": 3,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "F5TTSAudioAdvanced",
+      "pos": [
+        -5.576259613037109,
+        -217.11569213867188
+      ],
+      "size": [
+        400,
+        448
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "sample_audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-f5-tts",
+        "ver": "1e6487bf51d2bd6b2887b1237c1a837f4baf170a",
+        "Node name for S&R": "F5TTSAudioAdvanced"
+      },
+      "widgets_values": [
+        "F5TTS_test_en_1_ref_short.wav",
+        "This is what I want to say",
+        840,
+        "increment",
+        "F5",
+        "auto",
+        1,
+        "F5TTS_Base",
+        "Text of sample_audio",
+        0.10000000000000002,
+        0.15000000000000002,
+        32,
+        2,
+        -1,
+        1,
+        -1
+      ]
+    },
+    {
+      "id": 6,
+      "type": "LoadAudio",
+      "pos": [
+        -466.4443359375,
+        529.5262451171875
+      ],
+      "size": [
+        315,
+        136
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            3
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.30",
+        "Node name for S&R": "LoadAudio"
+      },
+      "widgets_values": [
+        "F5TTS_test_en_1_ref_short.wav",
+        null,
+        ""
+      ]
+    },
+    {
+      "id": 4,
+      "type": "F5TTSAudioAdvanced",
+      "pos": [
+        -16.569293975830078,
+        545.5172119140625
+      ],
+      "size": [
+        400,
+        448
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "sample_audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-f5-tts",
+        "ver": "1e6487bf51d2bd6b2887b1237c1a837f4baf170a",
+        "Node name for S&R": "F5TTSAudioAdvanced"
+      },
+      "widgets_values": [
+        "F5TTS_test_en_1_ref_short.chipmunk.wav",
+        "This is what I want to say",
+        840,
+        "increment",
+        "F5",
+        "auto",
+        1,
+        "F5TTS_Base",
+        "Some call me nature, others call me mother nature",
+        0.10000000000000002,
+        0.15000000000000002,
+        32,
+        2,
+        -1,
+        1,
+        -1
+      ]
+    },
+    {
+      "id": 3,
+      "type": "PreviewAudio",
+      "pos": [
+        522.0741577148438,
+        553.830322265625
+      ],
+      "size": [
+        315,
+        88
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 2
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.30",
+        "Node name for S&R": "PreviewAudio"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 2,
+      "type": "PreviewAudio",
+      "pos": [
+        533.0671997070312,
+        -208.8025665283203
+      ],
+      "size": [
+        315,
+        88
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 1
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.30",
+        "Node name for S&R": "PreviewAudio"
+      },
+      "widgets_values": []
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "AUDIO"
+    ],
+    [
+      2,
+      4,
+      0,
+      3,
+      0,
+      "AUDIO"
+    ],
+    [
+      3,
+      6,
+      0,
+      4,
+      0,
+      "AUDIO"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Group",
+      "bounding": [
+        -220.4443359375,
+        -387.4737548828125,
+        1109,
+        644
+      ],
+      "color": "#3f789e",
+      "font_size": 22,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "sample_audio input test",
+      "bounding": [
+        -489.4443359375,
+        386.5262451171875,
+        1359,
+        652
+      ],
+      "color": "#3f789e",
+      "font_size": 22,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8264462809917354,
+      "offset": [
+        538.3610389914465,
+        4.956441184057938
+      ]
+    },
+    "frontendVersion": "1.16.8",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}

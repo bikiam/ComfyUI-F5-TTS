@@ -6,7 +6,7 @@ Using F5-TTS https://github.com/SWivid/F5-TTS
 
 ### Instructions
 
-* Put in ComfyUI's "input" folder a .wav file of an audio of the voice you'd like to use, remove any background music, noise.
+* Put in ComfyUI's `input` folder a .wav file of an audio of the voice you'd like to use, remove any background music, noise.
 * And a .txt file of the same name with what was said.
 * Press refresh to see it in the node
 
@@ -22,7 +22,7 @@ You can use the examples here...
 
 ### Other languages / custom models...
 
-You can put the model & vocab txt files into "models/checkpoints/F5-TTS" folder if you have any more models.  Name the .txt vocab file and the .pt model file the same names.  Press "refresh" and it should appear under the "model" selection.
+You can put the model & vocab txt files into `models/checkpoints/F5-TTS` folder if you have any more models.  Name the .txt vocab file and the .pt model file the same names.  Press "refresh" and it should appear under the "model" selection.
 
 [Custom F5-TTS languages on huggingface](https://huggingface.co/models?search=f5)
 
@@ -49,7 +49,7 @@ I haven't tried these...
 
 Use the `F5-TTS Audio` node(not the from input node).
 
-Put your sample voice files into the "input" folder like...
+Put your sample voice files into the `input` folder like...
 ```
 voice.wav
 voice.txt
