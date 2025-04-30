@@ -106,4 +106,5 @@ pip install -r requirements.txt
 
 ### Changes
 
+1.0.21: Added advanced node
 1.0.19: Added model\_type.
