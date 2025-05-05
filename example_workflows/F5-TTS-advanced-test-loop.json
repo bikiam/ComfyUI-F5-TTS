@@ -428,69 +428,6 @@
       "widgets_values": []
     },
     {
-      "id": 20,
-      "type": "F5TTSAudioAdvanced",
-      "pos": [
-        565.753662109375,
-        445.84344482421875
-      ],
-      "size": [
-        400,
-        448
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "sample_audio",
-          "shape": 7,
-          "type": "AUDIO",
-          "link": null
-        },
-        {
-          "name": "speed",
-          "type": "FLOAT",
-          "widget": {
-            "name": "speed"
-          },
-          "link": 21
-        }
-      ],
-      "outputs": [
-        {
-          "name": "AUDIO",
-          "type": "AUDIO",
-          "links": [
-            22
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-f5-tts",
-        "ver": "1e6487bf51d2bd6b2887b1237c1a837f4baf170a",
-        "Node name for S&R": "F5TTSAudioAdvanced"
-      },
-      "widgets_values": [
-        "F5TTS_test_en_1_ref_short.chipmunk.wav",
-        "This is what I want to say",
-        2023,
-        "randomize",
-        "F5",
-        "auto",
-        1,
-        "F5TTS_Base",
-        "Text of sample_audio",
-        0.1,
-        0.15,
-        32,
-        2,
-        -1,
-        1,
-        -1
-      ]
-    },
-    {
       "id": 17,
       "type": "PrimitiveInt",
       "pos": [
@@ -589,7 +526,7 @@
       ],
       "size": [
         400,
-        448
+        478
       ],
       "flags": {},
       "order": 1,
@@ -632,6 +569,69 @@
         2,
         -1,
         1,
+        -1
+      ]
+    },
+    {
+      "id": 20,
+      "type": "F5TTSAudioAdvanced",
+      "pos": [
+        565.753662109375,
+        445.84344482421875
+      ],
+      "size": [
+        400,
+        478
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "sample_audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": null
+        },
+        {
+          "name": "speed",
+          "type": "FLOAT",
+          "widget": {
+            "name": "speed"
+          },
+          "link": 21
+        }
+      ],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            22
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-f5-tts",
+        "ver": "1e6487bf51d2bd6b2887b1237c1a837f4baf170a",
+        "Node name for S&R": "F5TTSAudioAdvanced"
+      },
+      "widgets_values": [
+        "F5TTS_test_en_1_ref_short.chipmunk.wav",
+        "This is what I want to say",
+        2023,
+        "randomize",
+        "F5",
+        "auto",
+        1,
+        "F5TTS_Base",
+        "Text of sample_audio",
+        0.1,
+        0.15,
+        32,
+        2,
+        -1,
+        "torch-time-stretch",
         -1
       ]
     }
@@ -774,11 +774,11 @@
     "ds": {
       "scale": 0.7513148009015777,
       "offset": [
-        896.0153389914462,
-        543.2107411840594
+        82.77433899144573,
+        -97.00025881594073
       ]
     },
-    "frontendVersion": "1.16.8",
+    "frontendVersion": "1.17.11",
     "VHS_latentpreview": false,
     "VHS_latentpreviewrate": 0,
     "VHS_MetadataImage": true,

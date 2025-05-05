@@ -42,6 +42,7 @@ I haven't tried these...
 [Russian](https://huggingface.co/hotstone228/F5-TTS-Russian)
 [Spanish](https://huggingface.co/jpgallegoar/F5-Spanish)
 [Turkish](https://huggingface.co/marduk-ra/F5-TTS-Turkish)
+[Thai](https://huggingface.co/VIZINTZOR/F5-TTS-THAI)
 [Vietnamese](https://huggingface.co/yukiakai/F5-TTS-Vietnamese)
 [Assamese, Bengali, Gujarati, Hindi, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu](https://huggingface.co/ShriAishu/hindiSpeech)
 
@@ -106,5 +107,6 @@ pip install -r requirements.txt
 
 ### Changes
 
+1.0.22: Added TDHS(Time-domain harmonic scaling) to advanced node.
 1.0.21: Added advanced node
 1.0.19: Added model\_type.
