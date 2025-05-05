@@ -94,20 +94,43 @@ class F5TTSCreate:
     def load_voice(ref_audio, ref_text):
         main_voice = {"ref_audio": ref_audio, "ref_text": ref_text}
 
-        main_voice["ref_audio"], main_voice["ref_text"] = preprocess_ref_audio_text( # noqa E501
-            ref_audio, ref_text
-        )
+        main_voice["ref_audio"], main_voice["ref_text"] = \
+            preprocess_ref_audio_text(  # noqa: E501
+                ref_audio, ref_text
+            )
         return main_voice
 
-    def get_model_funcs(self):
+    def get_model_funcs(self):  # noqa: E501
         return {
             "F5": self.load_f5_model,
-            "F5-HI": self.load_f5_model_hi,
-            "F5-JP": self.load_f5_model_jp,
-            "F5-FR": self.load_f5_model_fr,
-            "F5-DE": self.load_f5_model_de,
-            "F5-IT": self.load_f5_model_it,
-            "F5-ES": self.load_f5_model_es,
+            "F5-HI": {
+                "model": "hf://ShriAishu/hindiSpeech/model.safetensors",
+                "vocab": "hf://ShriAishu/hindiSpeech/checkpoints/vocab.txt",
+            },
+            "F5-JP": {
+                "model": "hf://Jmica/F5TTS/JA_8500000/model_8499660.pt",
+                "vocab": "hf://Jmica/F5TTS/JA_8500000/vocab_updated.txt",
+            },
+            "F5-FR": {
+                "model": "hf://RASPIAUDIO/F5-French-MixedSpeakers-reduced/model_1374000.pt",  # noqa: E501
+                "vocab": "hf://RASPIAUDIO/F5-French-MixedSpeakers-reduced/vocab.txt",  # noqa: E501
+            },
+            "F5-DE": {
+                "model": "hf://aihpi/F5-TTS-German/F5TTS_Base/model_420000.safetensors",  # noqa: E501
+                "vocab": "hf://aihpi/F5-TTS-German/vocab.txt",
+            },
+            "F5-IT": {
+                "model": "hf://alien79/F5-TTS-italian/model_159600.safetensors",  # noqa: E501
+                "vocab": "hf://alien79/F5-TTS-italian/vocab.txt",
+            },
+            "F5-ES": {
+                "model": "hf://jpgallegoar/F5-Spanish/model_1200000.safetensors",  # noqa: E501
+                "vocab": "hf://jpgallegoar/F5-Spanish/vocab.txt",
+            },
+            "F5-TH": {
+                "model": "hf://VIZINTZOR/F5-TTS-THAI/model_600000.pt",  # noqa: E501
+                "vocab": "hf://VIZINTZOR/F5-TTS-THAI/vocab.txt",
+            },
             "E2": self.load_e2_model,
         }
 
@@ -115,7 +138,7 @@ class F5TTSCreate:
         if vocoder_name == "vocos":
             os.path.join(Install.f5TTSPath, "checkpoints/vocos-mel-24khz")
         elif vocoder_name == "bigvgan":
-            os.path.join(Install.f5TTSPath, "checkpoints/bigvgan_v2_24khz_100band_256x") # noqa E501
+            os.path.join(Install.f5TTSPath, "checkpoints/bigvgan_v2_24khz_100band_256x")  # noqa: E501
 
     def load_vocoder(self,  vocoder_name):
         sys.path.insert(0, f5tts_path)
@@ -128,7 +151,14 @@ class F5TTSCreate:
         if model in model_funcs:
             if vocoder_name == 'auto':
                 vocoder_name = 'vocos'
-            return model_funcs[model](vocoder_name)
+            func = model_funcs[model]
+            if isinstance(func, dict):
+                return self.load_f5_model_url(
+                    func["model"],
+                    vocoder_name,
+                    func["vocab"],
+                )
+            return func(vocoder_name)
         else:
             config_path = F5TTSCreate.get_config_path()
             model_cfg = OmegaConf.load(
@@ -160,7 +190,7 @@ class F5TTSCreate:
         repo_name = "E2-TTS"
         exp_name = "E2TTS_Base"
         ckpt_step = 1200000
-        ckpt_file = str(cached_path(f"hf://SWivid/{repo_name}/{exp_name}/model_{ckpt_step}.safetensors")) # noqa E501
+        ckpt_file = str(cached_path(f"hf://SWivid/{repo_name}/{exp_name}/model_{ckpt_step}.safetensors"))  # noqa: E501
         vocab_file = self.get_vocab_file()
         vocoder_name = "vocos"
         ema_model = load_model(
@@ -182,44 +212,9 @@ class F5TTSCreate:
             exp_name = "F5TTS_Base"
             ckpt_step = 1200000
         return self.load_f5_model_url(
-            f"hf://SWivid/{repo_name}/{exp_name}/model_{ckpt_step}.{extension}", # noqa E501
+            f"hf://SWivid/{repo_name}/{exp_name}/model_{ckpt_step}.{extension}",  # noqa: E501
             vocoder,
         )
-
-    def load_f5_model_jp(self, vocoder):
-        return self.load_f5_model_url(
-            "hf://Jmica/F5TTS/JA_8500000/model_8499660.pt",
-            vocoder,
-            "hf://Jmica/F5TTS/JA_8500000/vocab_updated.txt"
-            )
-
-    def load_f5_model_fr(self, vocoder):
-        return self.load_f5_model_url(
-            "hf://RASPIAUDIO/F5-French-MixedSpeakers-reduced/model_1374000.pt", # noqa E501
-            vocoder,
-            "hf://RASPIAUDIO/F5-French-MixedSpeakers-reduced/vocab.txt" # noqa E501
-            )
-
-    def load_f5_model_de(self, vocoder):
-        return self.load_f5_model_url(
-            "hf://aihpi/F5-TTS-German/F5TTS_Base/model_420000.safetensors", # noqa E501
-            vocoder,
-            "hf://aihpi/F5-TTS-German/vocab.txt" # noqa E501
-            )
-
-    def load_f5_model_it(self, vocoder):
-        return self.load_f5_model_url(
-            "hf://alien79/F5-TTS-italian/model_159600.safetensors", # noqa E501
-            vocoder,
-            "hf://alien79/F5-TTS-italian/vocab.txt" # noqa E501
-            )
-
-    def load_f5_model_es(self, vocoder):
-        return self.load_f5_model_url(
-            "hf://jpgallegoar/F5-Spanish/model_1200000.safetensors", # noqa E501
-            vocoder,
-            "hf://jpgallegoar/F5-Spanish/vocab.txt" # noqa E501
-            )
 
     def cached_path(self, url):
         if url.startswith("model:"):
@@ -232,7 +227,7 @@ class F5TTSCreate:
                     return model_file
             raise FileNotFoundError("No model found: " + url)
             return None
-        return str(cached_path(url)) # noqa E501
+        return str(cached_path(url))
 
     def load_f5_model_hi_old(self, vocoder):
         model_cfg = dict(
@@ -253,13 +248,6 @@ class F5TTSCreate:
             model_cfg=model_cfg,
             )
 
-    def load_f5_model_hi(self, vocoder):
-        return self.load_f5_model_url(
-            "hf://ShriAishu/hindiSpeech/model.safetensors", # noqa E501
-            vocoder,
-            "hf://ShriAishu/hindiSpeech/checkpoints/vocab.txt", # noqa E501
-            )
-
     def load_f5_model_url(
         self, url, vocoder_name, vocab_url=None, model_cfg=None
     ):
@@ -277,7 +265,7 @@ class F5TTSCreate:
                 pe_attn_head=1,
                 )
 
-        ckpt_file = str(self.cached_path(url)) # noqa E501
+        ckpt_file = str(self.cached_path(url))
 
         if vocab_url is None:
             if url.startswith("model:"):
