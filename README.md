@@ -104,6 +104,15 @@ git submodule update --init --recursive
 pip install -r requirements.txt
 ```
 
+### No module named f5\_tts
+
+Some versions of git doesn't handle submodules well.  Remove the `custom\_nodes/ComfyUI-F5-TTS/F5-TTS` folder and clone the F5-TTS repository...
+```
+cd ComfyUI/custom\_nodes/ComfyUI-F5-TTS/
+rm -rf F5-TTS
+rmdir /s F5-TTS
+git clone https://github.com/SWivid/F5-TTS.git F5-TTS
+```
 
 ### Changes
 
