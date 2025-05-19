@@ -36,12 +36,13 @@ class F5TTSCreate:
     default_speed_type = "torch-time-stretch"
     model_names = [
         "F5",
-        "F5-HI",
-        "F5-JP",
-        "F5-FR",
         "F5-DE",
-        "F5-IT",
         "F5-ES",
+        "F5-FR",
+        "F5-HI",
+        "F5-IT",
+        "F5-JP",
+        "F5-TH",
         "E2",
     ]
     vocoder_types = ["auto", "vocos", "bigvgan"]
