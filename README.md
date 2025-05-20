@@ -24,27 +24,33 @@ You can use the examples here...
 
 You can put the model & vocab txt files into `models/checkpoints/F5-TTS` folder if you have any more models.  Name the .txt vocab file and the .pt model file the same names.  Press "refresh" and it should appear under the "model" selection.
 
+Example...
+```
+YourLanguage.txt
+YourLanguage.safetensors
+```
+
 [Custom F5-TTS languages on huggingface](https://huggingface.co/models?search=f5)
 
 I haven't tried these...
-[Finnish](https://huggingface.co/AsmoKoskinen/F5-TTS_Finnish_Model)
-[French](https://huggingface.co/RASPIAUDIO/F5-French-MixedSpeakers-reduced)
-[German](https://huggingface.co/aihpi/F5-TTS-German)
-[Greek](https://huggingface.co/PetrosStav/F5-TTS-Greek)
-[Hindi](https://huggingface.co/SPRINGLab/F5-Hindi-24KHz)
-[Hungarian](https://huggingface.co/sarpba/F5-TTS-Hun)
-[Italian](https://huggingface.co/alien79/F5-TTS-italian)
-[Japanese](https://huggingface.co/Jmica/F5TTS)
-[Malaysian](https://huggingface.co/mesolitica/Malaysian-F5-TTS)
-[Norwegian](https://huggingface.co/akhbar/F5_Norwegian)
-[Polish](https://huggingface.co/Gregniuki/F5-tts_English_German_Polish/tree/main/Polish)
-[Portuguese BR](https://huggingface.co/firstpixel/F5-TTS-pt-br)
-[Russian](https://huggingface.co/hotstone228/F5-TTS-Russian)
-[Spanish](https://huggingface.co/jpgallegoar/F5-Spanish)
-[Turkish](https://huggingface.co/marduk-ra/F5-TTS-Turkish)
-[Thai](https://huggingface.co/VIZINTZOR/F5-TTS-THAI)
-[Vietnamese](https://huggingface.co/yukiakai/F5-TTS-Vietnamese)
-[Assamese, Bengali, Gujarati, Hindi, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu](https://huggingface.co/ShriAishu/hindiSpeech)
+* [Finnish](https://huggingface.co/AsmoKoskinen/F5-TTS_Finnish_Model)
+* [French](https://huggingface.co/RASPIAUDIO/F5-French-MixedSpeakers-reduced)
+* [German](https://huggingface.co/aihpi/F5-TTS-German)
+* [Greek](https://huggingface.co/PetrosStav/F5-TTS-Greek)
+* [Hindi](https://huggingface.co/SPRINGLab/F5-Hindi-24KHz)
+* [Hungarian](https://huggingface.co/sarpba/F5-TTS-Hun)
+* [Italian](https://huggingface.co/alien79/F5-TTS-italian)
+* [Japanese](https://huggingface.co/Jmica/F5TTS)
+* [Malaysian](https://huggingface.co/mesolitica/Malaysian-F5-TTS)
+* [Norwegian](https://huggingface.co/akhbar/F5_Norwegian)
+* [Polish](https://huggingface.co/Gregniuki/F5-tts_English_German_Polish/tree/main/Polish)
+* [Portuguese BR](https://huggingface.co/firstpixel/F5-TTS-pt-br)
+* [Russian](https://huggingface.co/hotstone228/F5-TTS-Russian)
+* [Spanish](https://huggingface.co/jpgallegoar/F5-Spanish)
+* [Turkish](https://huggingface.co/marduk-ra/F5-TTS-Turkish)
+* [Thai](https://huggingface.co/VIZINTZOR/F5-TTS-THAI)
+* [Vietnamese](https://huggingface.co/yukiakai/F5-TTS-Vietnamese)
+* [Assamese, Bengali, Gujarati, Hindi, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu](https://huggingface.co/ShriAishu/hindiSpeech)
 
 ### Multi voices output...
 
@@ -116,6 +122,6 @@ git clone https://github.com/SWivid/F5-TTS.git F5-TTS
 
 ### Changes
 
-1.0.22: Added TDHS(Time-domain harmonic scaling) to advanced node.
-1.0.21: Added advanced node
-1.0.19: Added model\_type.
+* 1.0.22: Added TDHS(Time-domain harmonic scaling) to advanced node.
+* 1.0.21: Added advanced node
+* 1.0.19: Added model\_type.
