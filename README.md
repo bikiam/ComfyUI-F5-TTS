@@ -36,7 +36,6 @@ I haven't tried these...
 * [Finnish](https://huggingface.co/AsmoKoskinen/F5-TTS_Finnish_Model)
 * [French](https://huggingface.co/RASPIAUDIO/F5-French-MixedSpeakers-reduced)
 * [German](https://huggingface.co/aihpi/F5-TTS-German)
-* [Greek](https://huggingface.co/PetrosStav/F5-TTS-Greek)
 * [Hindi](https://huggingface.co/SPRINGLab/F5-Hindi-24KHz)
 * [Hungarian](https://huggingface.co/sarpba/F5-TTS-Hun)
 * [Italian](https://huggingface.co/alien79/F5-TTS-italian)
