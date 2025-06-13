@@ -53,7 +53,7 @@ I haven't tried these...
 
 ### Multi voices output...
 
-Use the `F5-TTS Audio` node(not the from input node).
+Use the `F5-TTS Audio` node(not the "from input" node).
 
 Put your sample voice files into the `input` folder like...
 ```
@@ -121,6 +121,7 @@ git clone https://github.com/SWivid/F5-TTS.git F5-TTS
 
 ### Changes
 
+* 1.0.23: Made F5-TTSv1 the default model.
 * 1.0.22: Added TDHS(Time-domain harmonic scaling) to advanced node.
 * 1.0.21: Added advanced node
 * 1.0.19: Added model\_type.
