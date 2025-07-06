@@ -35,15 +35,14 @@ class F5TTSCreate:
     voice_reg = re.compile(r"\{([^\}]+)\}")
     default_speed_type = "torch-time-stretch"
     model_names = [
-        "F5v1",
         "F5",
-        "F5-DE",
-        "F5-ES",
-        "F5-FR",
         "F5-HI",
-        "F5-IT",
+        "F5-HI-LOW",
         "F5-JP",
-        "F5-TH",
+        "F5-FR",
+        "F5-DE",
+        "F5-IT",
+        "F5-ES",
         "E2",
     ]
     vocoder_types = ["auto", "vocos", "bigvgan"]
@@ -105,15 +104,9 @@ class F5TTSCreate:
     def get_model_funcs(self):  # noqa: E501
         return {
             "F5": self.load_f5_model,
-            "F5v1": {
-                "model": "hf://SWivid/F5-TTS/F5TTS_v1_Base/model_1250000.safetensors",  # noqa: E501
-                "vocab": "hf://SWivid/F5-TTS/F5TTS_v1_Base/vocab.txt",  # noqa: E501
-                "model_type": "F5TTS_v1_Base",
-            },
-            "F5-HI": {
-                "model": "hf://ShriAishu/hindiSpeech/model.safetensors",
-                "vocab": "hf://ShriAishu/hindiSpeech/checkpoints/vocab.txt",
-            },
+            # use the “old” loader that has correct model_cfg for Hindi
+            "F5-HI": self.load_f5_model_hi_old,
+            "F5-HI-LOW": self.load_f5_model_hi_low,
             "F5-JP": {
                 "model": "hf://Jmica/F5TTS/JA_8500000/model_8499660.pt",
                 "vocab": "hf://Jmica/F5TTS/JA_8500000/vocab_updated.txt",
@@ -153,12 +146,6 @@ class F5TTSCreate:
         sys.path.remove(f5tts_path)
         return vocoder
 
-    def get_model_config(self, model_type):
-        config_path = F5TTSCreate.get_config_path()
-        return OmegaConf.load(
-            os.path.join(config_path, model_type + ".yaml")
-            ).model
-
     def load_model(self, model, vocoder_name, model_type):
         model_funcs = self.get_model_funcs()
         if model in model_funcs:
@@ -166,20 +153,17 @@ class F5TTSCreate:
                 vocoder_name = 'vocos'
             func = model_funcs[model]
             if isinstance(func, dict):
-                model_cfg = None
-                if "model_type" in func:
-                    model_config = self.get_model_config(func["model_type"])
-                    model_cfg = model_config.arch
-
                 return self.load_f5_model_url(
                     func["model"],
                     vocoder_name,
                     func["vocab"],
-                    model_cfg=model_cfg
                 )
             return func(vocoder_name)
         else:
-            model_cfg = self.get_model_config(model_type)
+            config_path = F5TTSCreate.get_config_path()
+            model_cfg = OmegaConf.load(
+                os.path.join(config_path, model_type + ".yaml")
+                ).model
             if vocoder_name == 'auto':
                 vocoder_name = model_cfg.mel_spec.mel_spec_type
 
@@ -258,11 +242,31 @@ class F5TTSCreate:
             checkpoint_activations=False,
             )
         return self.load_f5_model_url(
+            "hf://SPRINGLab/F5-Hindi-24KHz/model_2500000.pt",
+            "vocos",
+            "hf://SPRINGLab/F5-Hindi-24KHz/vocab.txt",
+            model_cfg=model_cfg,
+            )
+
+    def load_f5_model_hi_low(self, vocoder):
+        model_cfg = dict(
+            dim=768,
+            depth=18,
+            heads=12,
+            ff_mult=2,
+            text_dim=512,
+            text_mask_padding=False,
+            conv_layers=4,
+            pe_attn_head=1,
+            checkpoint_activations=False,
+            )
+        return self.load_f5_model_url(
             "hf://SPRINGLab/F5-Hindi-24KHz/model_2500000.safetensors",
             "vocos",
             "hf://SPRINGLab/F5-Hindi-24KHz/vocab.txt",
             model_cfg=model_cfg,
             )
+    
 
     def load_f5_model_url(
         self, url, vocoder_name, vocab_url=None, model_cfg=None
@@ -521,9 +525,7 @@ class F5TTSAudioInputs:
                     "default": 1, "min": -1,
                     "tooltip": F5TTSCreate.tooltip_seed,
                 }),
-                "model": (model_names, {
-                    "default": "F5v1",
-                }),
+                "model": (model_names,),
                 "vocoder": (F5TTSCreate.vocoder_types, {
                     "tooltip": "Auto will be set by model_type. Most models are usually vocos.",  # noqa: E501
                     "default": "auto",
